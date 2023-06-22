@@ -66,4 +66,69 @@ function onSearchBtn(event) {
 	return query;
 }
 
+// Sending a request and rendering the gallery
+async function showPhotos(query, currentPage = 1) {
+	const { hits, totalHits } = await getData(query, currentPage);
+	const totalPages = Math.ceil(totalHits / perPage);
 
+	refs.gallery.insertAdjacentHTML('beforeend', createMarkupCards({ hits }));
+
+	if (currentPage === totalPages) {
+		observe.unobserve(refs.target);
+
+		Notiflix.Notify.info(
+			"We're sorry, but you've reached the end of search results."
+		);
+	} else {
+		observer.observe(refs.target);
+	}
+
+	// Checking whether the response from the server is not empty
+	if (hits.length === 0) {
+    Notiflix.Notify.failure(
+      'Sorry, there are no images matching your search query. Please try again.'
+    );
+  } else if (currentPage === 1) {
+    Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
+  }
+  lightbox.refresh();
+}
+
+// Creating Image Group markup
+function createMarkupCards({ hits }) {
+  return hits
+    .map(
+      ({
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) => `<div class="photo-card">
+            <a href="${largeImageURL}">
+            <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+            </a>
+            <div class="info">
+                <p class="info-item">
+                <b>Likes</b>
+                ${likes}
+                </p>
+                <p class="info-item">
+                <b>Views</b>
+                ${views}
+                </p>
+                <p class="info-item">
+                <b>Comments</b>
+                ${comments}
+                </p>
+                <p class="info-item">
+                <b>Downloads</b>
+                ${downloads}
+                </p>
+            </div>
+            </div>`
+    )
+    .join('');
+}
