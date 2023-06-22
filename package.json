@@ -23,7 +23,7 @@
     "notiflix": "^3.2.6",
     "pixabay": "^0.0.1",
     "simplelightbox": "^2.14.1",
-    "slim-select": "^2.5.0"
+    "slim-select": "^2.5.1"
   },
   "devDependencies": {
     "@parcel/transformer-sass": "^2.6.0",
