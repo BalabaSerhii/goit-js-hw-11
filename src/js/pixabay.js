@@ -12,7 +12,7 @@ const searchParams = new URLSearchParams({
 export async function getData(query, page) {
 	try {
 		const response = await axios.get(
-			`${URL}?key=${API_KEY}$q=${query}&${searchParams}&page=${page}`
+      `${URL}?key=${API_KEY}&q=${query}&${searchParams}&page=${page}`
 		);
 		return response.data;
 	} catch (error) {
