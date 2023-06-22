@@ -1,13 +1,13 @@
-import Notiflix from "notiflix";
-import simpleLightbox from "simplelightbox";
+import Notiflix from 'notiflix';
+import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import { getData } from "./pixabay";
+import { getData } from './pixabay';
 
 const refs = {
-	search: document.querySelector('.search-form'),
-	gallery: document.querySelector('.gallery'),
-	loadMoreBtn: document.querySelector('.js-guard'),
-	target: document.querySelector('.js-guard'),
+  search: document.querySelector('.search-form'),
+  gallery: document.querySelector('.gallery'),
+  loadMoreBtn: document.querySelector('.load-more'),
+  target: document.querySelector('.js-guard'),
 };
 
 let query = '';
@@ -17,74 +17,72 @@ const perPage = 40;
 refs.loadMoreBtn.classList.add('is-hidden');
 
 // Magnification of images when clicked
-let lightbox = new simpleLightbox('.photo-card a', {
-	captionDelay: 250,
+let lightbox = new SimpleLightbox('.photo-card a', {
+  captionDelay: 250,
 });
 
 // Endless scrolling down
 const options = {
-	root: null,
-	rootMargin: '200px',
-	threshold: 1.0,
+  root: null,
+  rootMargin: '200px',
+  threshold: 1.0,
 };
 
-let observe = new IntersectionObserver(onLoad, options);
+let observer = new IntersectionObserver(onLoad, options);
 function onLoad(entries, observer) {
-	entries.forEach(entry => {
-		if (entry.isIntersecting) {
-			currentPage += 1;
-			lightbox.refresh();
-			showPhotos(query, currentPage);
-		}
-	});
-};
-
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      currentPage += 1;
+      lightbox.refresh();
+      showPhotos(query, currentPage);
+    }
+  });
+}
 // Performing image search and playback by subject
 refs.search.addEventListener('submit', onSearchBtn);
 
 function onSearchBtn(event) {
-	event.preventDefault();
-	currentPage = 1;
+  event.preventDefault();
+  currentPage = 1;
 
-	observer.unobserve(refs.target);
+  observer.unobserve(refs.target);
 
-	const searchValue = event.currentTarget.elements.searchQuery.value.trim();
-	
-	if (!searchValue) {
-		Notiflix.Notify.failure(
-			'Sorry, there are no images matching your search query. Please try again.'
-		);
-		return;
-	} else if (searchValue === query) {
-		return;
-	}
-	refs.gallery.innerHTML = '';
-	query = searchValue;
-	lightbox.refresh();
-	showPhotos(query, currentPage);
+  const searchValue = event.currentTarget.elements.searchQuery.value.trim();
 
-	return query;
+  if (!searchValue) {
+    Notiflix.Notify.failure(
+      'Sorry, there are no images matching your search query. Please try again.'
+    );
+    return;
+  } else if (searchValue === query) {
+    return;
+  }
+  refs.gallery.innerHTML = '';
+  query = searchValue;
+  lightbox.refresh();
+  showPhotos(query, currentPage);
+
+  return query;
 }
-
 // Sending a request and rendering the gallery
 async function showPhotos(query, currentPage = 1) {
-	const { hits, totalHits } = await getData(query, currentPage);
-	const totalPages = Math.ceil(totalHits / perPage);
+  const { hits, totalHits } = await getData(query, currentPage);
+  const totalPages = Math.ceil(totalHits / perPage);
 
-	refs.gallery.insertAdjacentHTML('beforeend', createMarkupCards({ hits }));
+  refs.gallery.insertAdjacentHTML('beforeend', createMarkupCards({ hits }));
 
-	if (currentPage === totalPages) {
-		observe.unobserve(refs.target);
+  if (currentPage === totalPages) {
+    observer.unobserve(refs.target);
 
-		Notiflix.Notify.info(
-			"We're sorry, but you've reached the end of search results."
-		);
-	} else {
-		observer.observe(refs.target);
-	}
+    Notiflix.Notify.info(
+      "We're sorry, but you've reached the end of search results."
+    );
+  } else {
+    observer.observe(refs.target);
+  }
 
 	// Checking whether the response from the server is not empty
-	if (hits.length === 0) {
+	  if (hits.length === 0) {
     Notiflix.Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.'
     );
